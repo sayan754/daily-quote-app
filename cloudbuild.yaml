@@ -13,11 +13,16 @@ steps:
   args:
   - 'run'
   - 'deploy'
-  - 'daily-quote-service' # This is the name of our new Cloud Run service
+  - 'daily-quote-service'
   - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/daily-quote-app/quote-image:$COMMIT_SHA'
   - '--region=us-central1'
   - '--platform=managed'
   - '--allow-unauthenticated'
 
+# Tell Cloud Build which images were created
 images:
 - 'us-central1-docker.pkg.dev/$PROJECT_ID/daily-quote-app/quote-image:$COMMIT_SHA'
+
+# ADD THIS NEW SECTION AT THE END
+options:
+  logging: CLOUD_LOGGING_ONLY
