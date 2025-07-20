@@ -1,28 +1,28 @@
 steps:
-# Step 1: Build the container image
+# Step 1: Build the container image AND push it to Artifact Registry
+# This single step does the job of the previous two.
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/daily-quote-app/quote-image:$COMMIT_SHA', '.']
+  args:
+  - 'build'
+  - '--tag=us-central1-docker.pkg.dev/$PROJECT_ID/daily-quote-app/quote-image:$COMMIT_SHA'
+  - '--tag=us-central1-docker.pkg.dev/$PROJECT_ID/daily-quote-app/quote-image:latest' # Also tag as 'latest'
+  - '.'
+  - '--push=us-central1-docker.pkg.dev/$PROJECT_ID/daily-quote-app/'
 
-# Step 2: Push the image to the secure registry
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/daily-quote-app/quote-image:$COMMIT_SHA']
-
-# Step 3: Deploy the image to a new Cloud Run service
+# Step 2: Deploy the new image to Cloud Run using the LATEST tag
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
   args:
   - 'run'
   - 'deploy'
   - 'daily-quote-service'
-  - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/daily-quote-app/quote-image:$COMMIT_SHA'
+  - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/daily-quote-app/quote-image:latest' # We will use the 'latest' tag for simplicity
   - '--region=us-central1'
   - '--platform=managed'
   - '--allow-unauthenticated'
 
-# Tell Cloud Build which images were created
+# This section is no longer strictly needed but is good practice
 images:
-- 'us-central1-docker.pkg.dev/$PROJECT_ID/daily-quote-app/quote-image:$COMMIT_SHA'
-
-# ADD THIS NEW SECTION AT THE END
+- 'us-central1-docker.pkg.dev/$PROJECT_ID/daily-quote-app/quote-image'
 options:
   logging: CLOUD_LOGGING_ONLY
